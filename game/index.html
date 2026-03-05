@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIGHT_COURIER — Árvores e Grafos</title>
+  <meta name="description"
+    content="Jogo cyberpunk educacional demonstrando algoritmos de grafos (Dijkstra) e árvores de decisão. Projeto UniEVANGÉLICA." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════════════════
+     SCREEN 1 — TITLE
+══════════════════════════════════════════════════════ -->
+  <section id="screen-title" class="screen">
+    <div class="title-bg"></div>
+    <div class="city-silhouette"></div>
+    <div class="title-content">
+      <p class="title-eyebrow">// Night City Courier Protocol — 2089</p>
+      <h1 class="title-logo">NIGHT<br>COURIER</h1>
+      <p class="title-sub">Entrega de Dados. 48 Horas. Sem Piedade.</p>
+      <p class="title-lore">
+        A cidade está em lockdown. Você tem um pacote com dados críticos
+        e 48 horas para cruzar os distritos e fazer a entrega. Cada rota tem um custo.
+        Cada escolha tem consequências.
+      </p>
+      <button id="btn-start" class="btn-primary">[ INICIAR MISSÃO ]</button>
+      <p class="title-meta">UNIEVANGELICA · ÁRVORES E GRAFOS · 2026</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+     SCREEN 2 — BRIEFING
+══════════════════════════════════════════════════════ -->
+  <section id="screen-briefing" class="screen">
+    <div class="title-bg"></div>
+    <div class="briefing-terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dots"><span></span><span></span><span></span></div>
+        <div class="terminal-title">NIGHT_COURIER.EXE // BRIEFING DA MISSÃO</div>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line">
+          <span class="prompt">COURIER_ID</span>
+          <span class="val">NC-7734 // VOCÊ</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">STATUS</span>
+          <span class="val">ATIVO // FORA DO GRID</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">ORIGEM</span>
+          <span class="val">NEXUS CORE</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">DESTINO</span>
+          <span class="val">BLACKOUT ZONE</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">PRAZO</span>
+          <span class="val">48 HORAS // DECRESCENTE</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">CRÉDITOS</span>
+          <span class="val">₵2,000 // SALDO INICIAL</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">CARGA</span>
+          <span class="val">IMPLANTE NEURAL — DADOS CRÍTICOS</span>
+        </div>
+        <div class="terminal-line">
+          <span class="prompt">ALERTA</span>
+          <span class="val" style="color:#ff2d78">LOCKDOWN ATIVO — PATRULHAS CORP EM TODOS OS DISTRITOS</span>
+        </div>
+        <div class="briefing-message">
+          Você navega o mapa clicando em distritos adjacentes ao seu. Cada distrito
+          contém um evento com árvore de decisão — suas escolhas afetam tempo,
+          créditos e saúde. Use o botão <strong style="color:#00ffe7">ROTA ÓTIMA</strong>
+          para calcular o menor caminho via algoritmo de Dijkstra.
+          Chegue a BLACKOUT ZONE dentro do prazo para completar a entrega.
+        </div>
+        <div class="briefing-actions">
+          <button id="btn-briefing-start" class="btn-primary">[ ACEITAR MISSÃO ]</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+     SCREEN 3 — MAP (main game)
+══════════════════════════════════════════════════════ -->
+  <section id="screen-map" class="screen">
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-block">
+        <div class="hud-label">Localização</div>
+        <div class="hud-value" id="hud-district">—</div>
+      </div>
+      <div class="hud-block">
+        <div class="hud-label">Destino</div>
+        <div class="hud-value" id="hud-target">—</div>
+      </div>
+      <div class="hud-block">
+        <div class="hud-label">Tempo</div>
+        <div class="hud-value" id="hud-time">48h</div>
+      </div>
+      <div class="hud-block">
+        <div class="hud-label">Créditos</div>
+        <div class="hud-value" id="hud-credits">₵2,000</div>
+      </div>
+      <div class="hud-health-container">
+        <div class="hud-label">Saúde &nbsp;<span id="hud-health-val">100%</span></div>
+        <div class="hud-health-track">
+          <div id="hud-health-bar" style="width:100%;background:#00ffe7;"></div>
+        </div>
+      </div>
+      <div class="hud-actions">
+        <button id="btn-optimal" class="hud-btn">⚡ ROTA ÓTIMA</button>
+        <button id="btn-algo" class="hud-btn">[ PAINEL ALGO ]</button>
+      </div>
+    </div>
+
+    <!-- City Map (SVG rendered by map.js) -->
+    <div class="map-area">
+      <svg id="city-map"></svg>
+
+      <!-- Map legend -->
+      <div class="map-legend">
+        <div class="legend-row">
+          <div class="legend-dot" style="background:#00ffe7;box-shadow:0 0 6px #00ffe7"></div>
+          <span>Posição atual</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-dot" style="border:2px solid #ff2d78;background:transparent"></div>
+          <span>Destino</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-line" style="background:#fff;opacity:.6"></div>
+          <span>Rotas acessíveis</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-line" style="background:#00ffe7"></div>
+          <span>Caminho ótimo (Dijkstra)</span>
+        </div>
+        <div class="legend-row">
+          <div class="legend-line" style="background:#441122;opacity:.6"></div>
+          <span>Rota bloqueada</span>
+        </div>
+      </div>
+
+      <!-- Event card panel (slides in from right) -->
+      <div id="event-panel">
+        <div class="event-header">
+          <div class="event-flavor" id="event-flavor">[ EVENTO ]</div>
+        </div>
+        <div class="event-body">
+          <p id="event-text"></p>
+          <div id="event-choices"></div>
+        </div>
+      </div>
+
+      <!-- Optimal path banner -->
+      <div id="path-banner"></div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+     ALGORITHM PANEL (overlay)
+══════════════════════════════════════════════════════ -->
+  <div id="algo-panel">
+    <div class="algo-inner">
+      <div class="algo-header">
+        <div class="algo-title">// PAINEL DE ALGORITMOS — ESTRUTURAS DE DADOS</div>
+        <button id="btn-algo-close">[ FECHAR ]</button>
+      </div>
+      <div class="algo-intro">
+        Este painel mostra as estruturas de dados em ação. O mapa da cidade é um
+        <strong>Grafo ponderado não-dirigido</strong>. A navegação entre distritos usa o algoritmo de
+        <strong>Dijkstra</strong> para encontrar o menor caminho. Cada evento de distrito é um nó raiz de
+        uma <strong>Árvore de Decisão</strong> — suas respostas percorrem a árvore até uma folha (outcome).
+      </div>
+      <div class="algo-cols">
+        <div class="algo-col">
+          <div class="algo-col-title">GRAFO — LISTA DE ADJACÊNCIA</div>
+          <pre class="algo-code" id="algo-adjacency">// Clique em ROTA ÓTIMA para carregar</pre>
+        </div>
+        <div class="algo-col">
+          <div class="algo-col-title">DIJKSTRA — MENOR CAMINHO</div>
+          <pre class="algo-code" id="algo-dijkstra">// Execute ROTA ÓTIMA no mapa</pre>
+        </div>
+        <div class="algo-col">
+          <div class="algo-col-title">ÁRVORE DE DECISÃO — PERCURSO</div>
+          <pre class="algo-code" id="algo-tree">// Chegue a um distrito para ver a árvore em ação</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+     SCREEN 4 — END
+══════════════════════════════════════════════════════ -->
+  <section id="screen-end" class="screen end-win">
+    <div class="title-bg"></div>
+    <div class="end-content">
+      <h1 id="end-title">ENTREGA COMPLETA</h1>
+      <p id="end-subtitle">Os dados chegaram ao destino. Night City respira.</p>
+      <div class="end-stats" id="end-stats"></div>
+      <div class="end-actions">
+        <button id="btn-restart" class="btn-primary">[ NOVA MISSÃO ]</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+     TOAST
+══════════════════════════════════════════════════════ -->
+  <div id="toast" class="toast toast-info"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
