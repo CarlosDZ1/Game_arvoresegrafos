@@ -8,6 +8,7 @@ import { getEvent } from './tree.js';
 import { getState, resetState, applyEffects, moveToDistrict, recordChoice, markDistrictDone, setGameOver, isAlive } from './state.js';
 import { initMap, render, showOptimalPath, clearOptimalPath } from './map.js';
 import { showScreen, updateHUD, showEventCard, hideEventCard, showToast, showPathBanner, toggleAlgoPanel, updateAlgoPanel, showEndScreen } from './ui.js';
+import { showExploration, hideExploration } from './exploration.js';
 import { graphSelfTest } from './graph.js';
 import { treeSelfTest } from './tree.js';
 
@@ -65,8 +66,8 @@ function goToMap() {
     }
     updateHUD();
 
-    // Trigger arrival event for starting district immediately
-    setTimeout(() => triggerDistrictEvent(getState().currentNode), 400);
+    // Trigger exploration for starting district
+    setTimeout(() => _enterDistrict(getState().currentNode), 400);
 }
 
 // ── Node Click Handler ────────────────────────────────────────
@@ -86,14 +87,14 @@ function handleNodeClick(districtId) {
         return;
     }
 
-    // Trigger district event
-    triggerDistrictEvent(districtId);
+    // Enter district exploration (or skip if already completed)
+    _enterDistrict(districtId);
 }
 
-// ── District Event ────────────────────────────────────────────
+// ── District Exploration & Event ──────────────────────────────
 let _currentEventNode = null;
 
-function triggerDistrictEvent(districtId) {
+function _enterDistrict(districtId) {
     const state = getState();
     if (state.districtsDone.has(districtId)) {
         // Already completed — just show a quick toast
@@ -101,6 +102,16 @@ function triggerDistrictEvent(districtId) {
         return;
     }
 
+    const eventTree = getEvent(districtId);
+    if (!eventTree) return;
+
+    // Show interactive exploration — NPC interaction triggers the event
+    showExploration(districtId, () => {
+        triggerDistrictEvent(districtId);
+    });
+}
+
+function triggerDistrictEvent(districtId) {
     const eventTree = getEvent(districtId);
     if (!eventTree) return;
 
