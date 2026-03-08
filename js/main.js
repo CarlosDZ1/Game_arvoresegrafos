@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-algo-close')?.addEventListener('click', () => {
         toggleAlgoPanel();
         const btn = document.getElementById('btn-algo');
-        if (btn) btn.textContent = '[ PAINEL ALGO ]';
+        if (btn) btn.textContent = '[ PAINEL ]';
     });
 
     showScreen('screen-title');
@@ -113,22 +113,19 @@ function _getNextDistrict(leafNode = null) {
     const state = getState();
     const current = state.currentNode;
     
+    const adjacent = getAdjacentNodes(current);
+    const adjacentIds = adjacent.map(conn => conn.to);
+    
     if (leafNode && leafNode.nextDistricts && leafNode.nextDistricts.length > 0) {
-        const options = leafNode.nextDistricts;
-        const chosen = options[Math.floor(Math.random() * options.length)];
-        
-        if (DISTRICTS[chosen]) {
+        const validOptions = leafNode.nextDistricts.filter(id => adjacentIds.includes(id));
+        if (validOptions.length > 0) {
+            const chosen = validOptions[Math.floor(Math.random() * validOptions.length)];
             console.log(`[AUTO-FLOW] Using decision route: ${current} → ${chosen}`);
             return chosen;
         }
     }
     
-    const adjacent = getAdjacentNodes(current);
-    if (adjacent.length === 0) {
-        console.warn('[AUTO-FLOW] No reachable districts from', current);
-        return null;
-    }
-    
+    // Strategy 2: Pick from adjacent districts that aren't yet completed
     const candidates = adjacent.filter(conn => {
         const id = conn.to;
         const notDone = !state.districtsDone.has(id);
@@ -136,25 +133,34 @@ function _getNextDistrict(leafNode = null) {
         return notDone && hasEvent;
     });
     
-    if (candidates.length === 0) {
-        const allUndone = Object.keys(DISTRICTS).filter(id => 
-            !state.districtsDone.has(id) && id !== current && getEvent(id)
-        );
-        if (allUndone.length === 0) return null;
-        
-        const { dist } = dijkstra(current);
-        let closest = null;
-        let minDist = Infinity;
-        allUndone.forEach(id => {
-            if (dist[id] < minDist) {
-                minDist = dist[id];
-                closest = id;
-            }
-        });
-        return closest;
+    if (candidates.length > 0) {
+        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        console.log(`[AUTO-FLOW] Using adjacent unvisited: ${current} → ${chosen.to}`);
+        return chosen.to;
+    }
+
+    if (adjacentIds.length === 0) {
+        console.warn('[AUTO-FLOW] No reachable districts from', current);
+        return null;
     }
     
-    return candidates[0].to;
+    const allUndone = Object.keys(DISTRICTS).filter(id => 
+        !state.districtsDone.has(id) && id !== current && getEvent(id)
+    );
+    if (allUndone.length === 0) return null;
+    
+    const { dist } = dijkstra(current);
+    let closest = null;
+    let minDist = Infinity;
+    allUndone.forEach(id => {
+        if (dist[id] < minDist) {
+            minDist = dist[id];
+            closest = id;
+        }
+    });
+    
+    console.log(`[AUTO-FLOW] Using Dijkstra fallback: ${current} → ${closest}`);
+    return closest;
 }
 
 

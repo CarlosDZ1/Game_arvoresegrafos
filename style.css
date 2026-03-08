@@ -1264,6 +1264,11 @@ svg.fade-out {
   transition: none;
 }
 
+
+.exploration-player.player-adjust-ghost {
+  bottom: 27%;
+}
+
 .player-glow {
   position: absolute;
   bottom: -8px;
@@ -1290,7 +1295,7 @@ svg.fade-out {
 
 .player-sprite-img {
   display: block;
-  height: 80px;
+  height: 140px;
   width: auto;
   image-rendering: pixelated;
   image-rendering: crisp-edges;

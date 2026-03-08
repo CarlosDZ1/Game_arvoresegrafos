@@ -215,7 +215,7 @@ function _buildScene(scene, districtId) {
             </div>
 
             <!-- Player Character -->
-            <div class="exploration-player" id="expl-player" style="left:${_playerX}%">
+            <div class="exploration-player ${districtId === 'ghost' ? 'player-adjust-ghost' : ''}" id="expl-player" style="left:${_playerX}%">
                 <div class="player-glow"></div>
                 <img class="player-sprite-img" id="player-sprite-img" src="sprites/user_walk_1.png" alt="courier" draggable="false" />
                 <div class="player-shadow"></div>
