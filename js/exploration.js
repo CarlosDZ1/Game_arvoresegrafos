@@ -103,10 +103,24 @@ let _rainDrops = [];
 let _walkFrame = 0;
 let _walkTick = 0;
 
+// Jump state
+let _isJumping = false;
+let _jumpVelocity = 0;
+let _jumpY = 0; // current jump height offset in px
+let _jumpFrame = 0;
+
 const PLAYER_SPEED = 0.35; // % per frame (~60fps)
 const WALK_FRAMES = 6;
-const WALK_FRAME_RATE = 6; // change frame every N game ticks (~100ms at 60fps)
+const WALK_FRAME_RATE = 8; // change frame every N game ticks (~133ms at 60fps)
 const INTERACT_RANGE = 8; // % distance to NPC to interact
+const JUMP_VELOCITY = -12; // initial upward velocity (negative = up)
+const JUMP_GRAVITY = 0.6;  // gravity pull per frame
+const JUMP_FRAMES = 3;
+const IDLE_FRAMES = 2;
+const IDLE_FRAME_RATE = 40; // change frame every N ticks (~670ms at 60fps)
+
+let _idleFrame = 0;
+let _idleTick = 0;
 
 // ── Public API ────────────────────────────────────────────────
 export function showExploration(districtId, onInteract) {
@@ -123,6 +137,12 @@ export function showExploration(districtId, onInteract) {
     _keys = {};
     _walkFrame = 0;
     _walkTick = 0;
+    _isJumping = false;
+    _jumpVelocity = 0;
+    _jumpY = 0;
+    _jumpFrame = 0;
+    _idleFrame = 0;
+    _idleTick = 0;
 
     _buildScene(scene, districtId);
     _startLoop();
@@ -217,7 +237,7 @@ function _buildScene(scene, districtId) {
             <!-- Player Character -->
             <div class="exploration-player ${districtId === 'ghost' ? 'player-adjust-ghost' : ''}" id="expl-player" style="left:${_playerX}%">
                 <div class="player-glow"></div>
-                <img class="player-sprite-img" id="player-sprite-img" src="sprites/user_walk_1.png" alt="courier" draggable="false" />
+                <img class="player-sprite-img" id="player-sprite-img" src="sprites/PlayerIdle/Idle1.png" alt="courier" draggable="false" />
                 <div class="player-shadow"></div>
             </div>
 
@@ -355,34 +375,74 @@ function _update() {
         moving = true;
     }
 
-    _isWalking = moving;
+    // Jump trigger (Space, W, or ArrowUp)
+    if ((_keys['Space'] || _keys['KeyW'] || _keys['ArrowUp']) && !_isJumping) {
+        _isJumping = true;
+        _jumpVelocity = JUMP_VELOCITY;
+        _jumpFrame = 0;
+    }
+
+    // Jump physics
+    if (_isJumping) {
+        _jumpVelocity += JUMP_GRAVITY;
+        _jumpY += _jumpVelocity;
+
+        // Determine jump sprite frame based on arc phase
+        if (_jumpVelocity < -2) {
+            _jumpFrame = 0; // ascending -> Jump1
+        } else if (_jumpVelocity < 2) {
+            _jumpFrame = 1; // peak -> Jump2
+        } else {
+            _jumpFrame = 2; // descending -> Jump3
+        }
+
+        // Land
+        if (_jumpY >= 0) {
+            _jumpY = 0;
+            _jumpVelocity = 0;
+            _isJumping = false;
+            _jumpFrame = 0;
+        }
+    }
+
+    _isWalking = moving && !_isJumping;
 
     // Update player position & animation
     const playerEl = document.getElementById('expl-player');
     if (playerEl) {
         playerEl.style.left = `${_playerX}%`;
-        playerEl.style.transform = `scaleX(${_playerDir})`;
-        if (moving) {
+        playerEl.style.transform = `scaleX(${_playerDir}) translateY(${_jumpY}px)`;
+        if (_isWalking) {
             playerEl.classList.add('walking');
         } else {
             playerEl.classList.remove('walking');
         }
     }
 
-    // Walk frame animation
+    // Sprite frame animation
     const spriteImg = document.getElementById('player-sprite-img');
     if (spriteImg) {
-        if (moving) {
+        if (_isJumping) {
+            // Jump sprites
+            spriteImg.src = `sprites/PlayerJump/Jump${_jumpFrame + 1}.png`;
+        } else if (moving) {
+            // Walk sprites
             _walkTick++;
             if (_walkTick >= WALK_FRAME_RATE) {
                 _walkTick = 0;
                 _walkFrame = (_walkFrame + 1) % WALK_FRAMES;
             }
-            spriteImg.src = `sprites/user_walk_${_walkFrame + 1}.png`;
+            spriteImg.src = `sprites/PlayerWalk/Walkfix_${_walkFrame + 1}.png`;
         } else {
+            // Idle breathing
             _walkFrame = 0;
             _walkTick = 0;
-            spriteImg.src = 'sprites/user_walk_1.png';
+            _idleTick++;
+            if (_idleTick >= IDLE_FRAME_RATE) {
+                _idleTick = 0;
+                _idleFrame = (_idleFrame + 1) % IDLE_FRAMES;
+            }
+            spriteImg.src = `sprites/PlayerIdle/Idle${_idleFrame + 1}.png`;
         }
     }
 
