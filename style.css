@@ -68,6 +68,14 @@ body::after {
   animation: fadeIn 0.4s ease both;
 }
 
+svg {
+  transition: opacity 0.5s ease-in-out;
+}
+
+svg.fade-out {
+  opacity: 0.2;
+}
+
 /* ═══════════════════════════════════════════════════════════
    TITLE SCREEN
 ═══════════════════════════════════════════════════════════ */

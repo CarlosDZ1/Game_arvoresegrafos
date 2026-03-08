@@ -3,7 +3,7 @@
 //  NIGHT_COURIER | Árvores e Grafos – UniEVANGÉLICA
 // =============================================================
 
-import { DISTRICTS, getEdges, dijkstra, getPath, getAdjacentNodes } from './graph.js';
+import { DISTRICTS, SUB_DISTRICTS, getEdges, dijkstra, getPath, getAdjacentNodes } from './graph.js';
 import { getState, setOptimalPath } from './state.js';
 
 const SVG_W = 960;
@@ -30,6 +30,7 @@ export function render() {
     _drawGrid();
     _drawEdges();
     _drawNodes();
+    _drawSubDistricts();
 }
 
 function _appendDefs() {
@@ -42,6 +43,11 @@ function _appendDefs() {
         filter.appendChild(fe);
         defs.appendChild(filter);
     });
+
+    const obscured = _el('filter', { id: 'obscured', x: '-50%', y: '-50%', width: '200%', height: '200%' });
+    obscured.appendChild(_el('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: '1.5' }));
+    obscured.appendChild(_el('feComponentTransfer', {}));
+    defs.appendChild(obscured);
 
     // Generic cyan glow
     const gf = _el('filter', { id: 'glow-cyan', x: '-50%', y: '-50%', width: '200%', height: '200%' });
@@ -240,6 +246,27 @@ function _drawNodes() {
             icon.textContent = '▲';
             g.appendChild(icon);
         }
+    });
+
+    _svg.appendChild(g);
+}
+
+function _drawSubDistricts() {
+    const g = _el('g', { class: 'sub-districts' });
+
+    Object.values(SUB_DISTRICTS).forEach(sd => {
+        const r = 9;
+        const opacity = 0.45;
+
+        const circle = _el('circle', {
+            cx: sd.x, cy: sd.y, r,
+            fill: '#0a0a1a',
+            stroke: sd.color,
+            'stroke-width': '1.2',
+            opacity: opacity.toString(),
+            filter: 'url(#obscured)',
+        });
+        g.appendChild(circle);
     });
 
     _svg.appendChild(g);

@@ -4,14 +4,47 @@
 // =============================================================
 
 export const DISTRICTS = {
-    nexus: { id: 'nexus', name: 'NEXUS CORE', color: '#00ffe7', x: 500, y: 300 },
-    docks: { id: 'docks', name: 'IRON DOCKS', color: '#ff8c00', x: 200, y: 420 },
-    ghost: { id: 'ghost', name: 'GHOST QUARTER', color: '#bf5fff', x: 180, y: 160 },
-    bazaar: { id: 'bazaar', name: 'CHROME BAZAAR', color: '#f5c518', x: 760, y: 200 },
-    slums: { id: 'slums', name: 'NEURAL SLUMS', color: '#ff2d78', x: 480, y: 480 },
-    bridge: { id: 'bridge', name: 'SKYBRIDGE', color: '#00aaff', x: 400, y: 120 },
-    helix: { id: 'helix', name: 'HELIX LAB', color: '#39ff14', x: 740, y: 390 },
-    blackout: { id: 'blackout', name: 'BLACKOUT ZONE', color: '#ff4444', x: 660, y: 510 },
+    nexus: { id: 'nexus', name: 'NEXUS CORE', color: '#00ffe7', x: 160, y: 140 },
+    docks: { id: 'docks', name: 'IRON DOCKS', color: '#ff8c00', x: 290, y: 480 },
+    ghost: { id: 'ghost', name: 'GHOST QUARTER', color: '#bf5fff', x: 95, y: 320 },
+    bazaar: { id: 'bazaar', name: 'CHROME BAZAAR', color: '#f5c518', x: 820, y: 180 },
+    slums: { id: 'slums', name: 'NEURAL SLUMS', color: '#ff2d78', x: 450, y: 350 },
+    bridge: { id: 'bridge', name: 'SKYBRIDGE', color: '#00aaff', x: 420, y: 60 },
+    helix: { id: 'helix', name: 'HELIX LAB', color: '#39ff14', x: 750, y: 420 },
+    blackout: { id: 'blackout', name: 'BLACKOUT ZONE', color: '#ff4444', x: 650, y: 510 },
+};
+
+export const SUB_DISTRICTS = {
+    
+    nexus_vault: { id: 'nexus_vault', name: 'Vault Sector', color: '#0088aa', x: 200, y: 110, parent: 'nexus', accessible: false },
+    nexus_server: { id: 'nexus_server', name: 'Server Farm', color: '#0088aa', x: 130, y: 190, parent: 'nexus', accessible: false },
+    nexus_resonance: { id: 'nexus_resonance', name: 'Resonance', color: '#0088aa', x: 180, y: 240, parent: 'nexus', accessible: false },
+    
+    ghost_underground: { id: 'ghost_underground', name: 'Underground', color: '#7722aa', x: 45, y: 280, parent: 'ghost', accessible: false },
+    ghost_ruins: { id: 'ghost_ruins', name: 'Ruins', color: '#7722aa', x: 80, y: 380, parent: 'ghost', accessible: false },
+    ghost_void: { id: 'ghost_void', name: 'Void Sphere', color: '#7722aa', x: 140, y: 250, parent: 'ghost', accessible: false },
+    
+    docks_submarine: { id: 'docks_submarine', name: 'Sub Bay', color: '#cc6600', x: 240, y: 540, parent: 'docks', accessible: false },
+    docks_warehouse: { id: 'docks_warehouse', name: 'Warehouse', color: '#cc6600', x: 330, y: 500, parent: 'docks', accessible: false },
+    docks_spillway: { id: 'docks_spillway', name: 'Spillway', color: '#cc6600', x: 260, y: 430, parent: 'docks', accessible: false },
+    
+    bazaar_blackmarket: { id: 'bazaar_blackmarket', name: 'Black Market', color: '#cc9900', x: 880, y: 140, parent: 'bazaar', accessible: false },
+    bazaar_syndicate: { id: 'bazaar_syndicate', name: 'Syndicate HQ', color: '#cc9900', x: 800, y: 240, parent: 'bazaar', accessible: false },
+    bazaar_vault: { id: 'bazaar_vault', name: 'Vault Trade', color: '#cc9900', x: 760, y: 150, parent: 'bazaar', accessible: false },
+    
+    slums_underbelly: { id: 'slums_underbelly', name: 'Underbelly', color: '#cc0055', x: 380, y: 320, parent: 'slums', accessible: false },
+    slums_gang_zone: { id: 'slums_gang_zone', name: 'Gang Zone', color: '#cc0055', x: 520, y: 380, parent: 'slums', accessible: false },
+    slums_pit: { id: 'slums_pit', name: 'Pit Sector', color: '#cc0055', x: 480, y: 280, parent: 'slums', accessible: false },
+    
+    helix_restricted: { id: 'helix_restricted', name: 'Restricted', color: '#22cc00', x: 700, y: 360, parent: 'helix', accessible: false },
+    helix_vault: { id: 'helix_vault', name: 'Bio-Vault', color: '#22cc00', x: 820, y: 480, parent: 'helix', accessible: false },
+    helix_research: { id: 'helix_research', name: 'Research', color: '#22cc00', x: 760, y: 470, parent: 'helix', accessible: false },
+    
+    bridge_toll: { id: 'bridge_toll', name: 'Toll Station', color: '#0088cc', x: 460, y: 30, parent: 'bridge', accessible: false },
+    bridge_overlook: { id: 'bridge_overlook', name: 'Overlook', color: '#0088cc', x: 340, y: 100, parent: 'bridge', accessible: false },
+    
+    blackout_core: { id: 'blackout_core', name: 'Event Horizon', color: '#cc2222', x: 600, y: 460, parent: 'blackout', accessible: false },
+    blackout_void: { id: 'blackout_void', name: 'Void Apex', color: '#cc2222', x: 720, y: 540, parent: 'blackout', accessible: false },
 };
 
 // Adjacency list – each edge: { to, time, danger, label, locked }

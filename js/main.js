@@ -3,7 +3,7 @@
 //  NIGHT_COURIER | Árvores e Grafos – UniEVANGÉLICA
 // =============================================================
 
-import { initGraph, unlockEdge, lockEdge, DISTRICTS } from './graph.js';
+import { initGraph, unlockEdge, lockEdge, DISTRICTS, getAdjacentNodes, dijkstra } from './graph.js';
 import { getEvent } from './tree.js';
 import { getState, resetState, applyEffects, moveToDistrict, recordChoice, markDistrictDone, setGameOver, isAlive } from './state.js';
 import { initMap, render, showOptimalPath, clearOptimalPath } from './map.js';
@@ -59,6 +59,12 @@ function restartGame() {
 }
 
 function goToMap() {
+    const state = getState();
+    
+    if (state.currentNode !== 'bridge') {
+        moveToDistrict('bridge');
+    }
+    
     showScreen('screen-map');
     const svgEl = document.getElementById('city-map');
     if (svgEl) {
@@ -66,8 +72,10 @@ function goToMap() {
     }
     updateHUD();
 
-    // Trigger exploration for starting district
-    setTimeout(() => _enterDistrict(getState().currentNode), 400);
+    setTimeout(() => {
+        showToast('🔷 Courier aterrisado em SKYBRIDGE • Iniciando operação...', 'info');
+        setTimeout(() => _enterDistrict('bridge'), 400);
+    }, 400);
 }
 
 // ── Node Click Handler ────────────────────────────────────────
@@ -75,20 +83,112 @@ function handleNodeClick(districtId) {
     const state = getState();
     if (state.gameOver) return;
 
-    // Move the courier
-    moveToDistrict(districtId);
-    clearOptimalPath();
-    render();
-    updateHUD();
+    const svgEl = document.getElementById('city-map');
+    if (svgEl) svgEl.classList.add('fade-out');
+    
+    setTimeout(() => {
+        moveToDistrict(districtId);
+        clearOptimalPath();
+        render();
+        updateHUD();
+        
+        if (svgEl) {
+            svgEl.classList.remove('fade-out');
+            svgEl.classList.add('fade-in');
+        }
 
-    // Did the player die in transit?
-    if (!isAlive()) {
-        endGame(false);
-        return;
+        // Did the player die in transit?
+        if (!isAlive()) {
+            endGame(false);
+            return;
+        }
+
+        // Enter district exploration (or skip if already completed)
+        setTimeout(() => _enterDistrict(districtId), 300);
+    }, 250);
+}
+
+
+function _getNextDistrict(leafNode = null) {
+    const state = getState();
+    const current = state.currentNode;
+    
+    if (leafNode && leafNode.nextDistricts && leafNode.nextDistricts.length > 0) {
+        const options = leafNode.nextDistricts;
+        const chosen = options[Math.floor(Math.random() * options.length)];
+        
+        if (DISTRICTS[chosen]) {
+            console.log(`[AUTO-FLOW] Using decision route: ${current} → ${chosen}`);
+            return chosen;
+        }
     }
+    
+    const adjacent = getAdjacentNodes(current);
+    if (adjacent.length === 0) {
+        console.warn('[AUTO-FLOW] No reachable districts from', current);
+        return null;
+    }
+    
+    const candidates = adjacent.filter(conn => {
+        const id = conn.to;
+        const notDone = !state.districtsDone.has(id);
+        const hasEvent = getEvent(id) !== null;
+        return notDone && hasEvent;
+    });
+    
+    if (candidates.length === 0) {
+        const allUndone = Object.keys(DISTRICTS).filter(id => 
+            !state.districtsDone.has(id) && id !== current && getEvent(id)
+        );
+        if (allUndone.length === 0) return null;
+        
+        const { dist } = dijkstra(current);
+        let closest = null;
+        let minDist = Infinity;
+        allUndone.forEach(id => {
+            if (dist[id] < minDist) {
+                minDist = dist[id];
+                closest = id;
+            }
+        });
+        return closest;
+    }
+    
+    return candidates[0].to;
+}
 
-    // Enter district exploration (or skip if already completed)
-    _enterDistrict(districtId);
+
+function _autoAdvanceToNextDistrict(leafNode = null) {
+    const nextId = _getNextDistrict(leafNode);
+    if (!nextId) {
+        console.log('[AUTO-FLOW] No next district available.');
+        return false;
+    }
+    
+    const state = getState();
+    const currentName = DISTRICTS[state.currentNode]?.name || state.currentNode;
+    const nextName = DISTRICTS[nextId]?.name || nextId;
+    
+    const svgEl = document.getElementById('city-map');
+    if (svgEl) svgEl.classList.add('fade-out');
+    
+    setTimeout(() => {
+        moveToDistrict(nextId);
+        clearOptimalPath();
+        render();
+        updateHUD();
+        
+        if (svgEl) {
+            svgEl.classList.remove('fade-out');
+            svgEl.classList.add('fade-in');
+        }
+        
+        showToast(`🔄 Courier moveu automaticamente: ${currentName} → ${nextName}`, 'info');
+        
+        setTimeout(() => _enterDistrict(nextId), 300);
+    }, 250);
+    
+    return true;
 }
 
 // ── District Exploration & Event ──────────────────────────────
@@ -172,6 +272,13 @@ function _applyLeafEffects(node) {
     if (node.win) { endGame(true); return; }
     if (node.lose) { endGame(false); return; }
     if (!isAlive()) { endGame(false); return; }
+    
+    setTimeout(() => {
+        const advanced = _autoAdvanceToNextDistrict(node);
+        if (!advanced) {
+            showToast('✦ Awaiting next decision...', 'info');
+        }
+    }, 800);
 }
 
 // ── Optimal Route ─────────────────────────────────────────────

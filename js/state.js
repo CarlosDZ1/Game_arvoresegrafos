@@ -4,30 +4,30 @@
 // =============================================================
 
 const INITIAL_STATE = {
-    currentNode: 'nexus',
+    currentNode: 'bridge',
     targetNode: 'blackout',
     time: 48,      // hours remaining
     credits: 2000,
     health: 100,
-    visitedNodes: ['nexus'],
+    visitedNodes: ['bridge'],
     decisionPath: [],     // list of choice ids made (for algo panel)
-    pathTaken: ['nexus'], // districts visited in order
+    pathTaken: ['bridge'],
     optimalPath: [],
     gameOver: false,
     won: false,
     districtsDone: new Set(), // districts where event was completed
 };
 
-let _state = { ...INITIAL_STATE, visitedNodes: ['nexus'], decisionPath: [], pathTaken: ['nexus'], districtsDone: new Set() };
+let _state = { ...INITIAL_STATE, visitedNodes: ['bridge'], decisionPath: [], pathTaken: ['bridge'], districtsDone: new Set() };
 
 export function getState() { return _state; }
 
 export function resetState() {
     _state = {
         ...INITIAL_STATE,
-        visitedNodes: ['nexus'],
+        visitedNodes: ['bridge'],
         decisionPath: [],
-        pathTaken: ['nexus'],
+        pathTaken: ['bridge'],
         districtsDone: new Set(),
         optimalPath: [],
     };
