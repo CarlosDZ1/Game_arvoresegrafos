@@ -1,0 +1,173 @@
+# Night Courier — Mapa Completo de Rotas e Escolhas
+
+Cada distrito possui um evento com uma árvore de decisão. Ao final de cada caminho (folha), o jogador recebe efeitos e é direcionado ao próximo distrito. Quando há **múltiplos destinos**, o jogador escolhe no mapa. Quando há **um único destino**, o avanço é obrigatório (⚡).
+
+---
+
+## 🌉 SKYBRIDGE (Início)
+
+```mermaid
+graph TD
+    B["SKYBRIDGE"] --> B_A["Correr pela ponte aberta"]
+    B["SKYBRIDGE"] --> B_B["Subornar o operador da ponte"]
+    B_A --> B_A1["Velocidade máxima"]
+    B_A --> B_A2["Cobertura de comboio"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Correr → **Velocidade máxima** | ⏱-3h 💔-10hp | Ghost, Bazaar, Slums | — |
+| Correr → **Cobertura de comboio** | ⏱+1h | Ghost, Bazaar, Slums | — |
+| **Subornar operador** | ⏱-2h 💰-350 | Ghost, Bazaar, Slums | — |
+
+---
+
+## 💠 NEXUS CORE
+
+```mermaid
+graph TD
+    N["NEXUS CORE"] --> N_A["Aceitar dica da intermediária"]
+    N["NEXUS CORE"] --> N_B["Ignorar e seguir rápido"]
+    N_A --> N_A1["Confiar — sub-rede"]
+    N_A --> N_A2["Recusar — arriscado"]
+    N_B --> N_B1["Subornar o guarda"]
+    N_B --> N_B2["Forçar passagem"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Aceitar → **Confiar (sub-rede)** | ⏱-2h 💰-150 | Ghost, Docks | 🔓 Desbloqueia Ghost→Bazaar |
+| Aceitar → **Recusar** | — | Docks, Ghost | — |
+| Ignorar → **Subornar guarda** | ⏱-1h 💰-300 | Docks, Bazaar | — |
+| Ignorar → **Forçar passagem** | 💔-20hp | Docks, Slums | — |
+
+---
+
+## ⚓ IRON DOCKS
+
+```mermaid
+graph TD
+    D["IRON DOCKS"] --> D_A["Negociar passagem"]
+    D["IRON DOCKS"] --> D_B["Furtivamente pelo contêiner"]
+    D_A --> D_A1["Pagar o pedágio"]
+    D_A --> D_A2["Recusar — outro caminho"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Negociar → **Pagar pedágio** | ⏱-3h 💰-500 | Ghost, Bazaar | 🔓 Desbloqueia Docks→Blackout |
+| Negociar → **Recusar** | ⏱+3h | Ghost, Slums | — |
+| **Furtivamente (contêiner)** | ⏱+1h 💔-10hp | Ghost, Bazaar, Slums | — |
+
+---
+
+## 👻 GHOST QUARTER
+
+```mermaid
+graph TD
+    G["GHOST QUARTER"] --> G_A["Visitar clínica clandestina"]
+    G["GHOST QUARTER"] --> G_B["Seguir sem parar"]
+    G_A --> G_A1["Tratamento completo"]
+    G_A --> G_A2["Só o básico"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Clínica → **Tratamento completo** | ⏱+2h 💰-400 💚+35hp | Bazaar, Slums | — |
+| Clínica → **Só o básico** | ⏱+1h 💰-150 💚+15hp | Bazaar, Slums | — |
+| **Seguir sem parar** | ⏱-1h 💔-15hp | Bazaar, Slums, Helix | — |
+
+---
+
+## 🏪 CHROME BAZAAR
+
+```mermaid
+graph TD
+    BZ["CHROME BAZAAR"] --> BZ_A["Comprar mod de velocidade"]
+    BZ["CHROME BAZAAR"] --> BZ_B["Vender intel da sub-rede"]
+    BZ_A --> BZ_A1["Comprar"]
+    BZ_A --> BZ_A2["Passar — não confiável"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Mod → **Comprar** | ⏱-5h 💰-600 | Slums, Helix | — |
+| Mod → **Passar** | — | Slums, Helix | — |
+| **Vender intel** | 💰+500 | Slums, Helix | 🔒 Tranca Ghost→Bazaar |
+
+---
+
+## 🔥 NEURAL SLUMS
+
+```mermaid
+graph TD
+    S["NEURAL SLUMS"] --> S_A["Pedir orientação a corredor local"]
+    S["NEURAL SLUMS"] --> S_B["Ficar quieto — esperar patrulha"]
+    S_A --> S_A1["Aceitar o acordo"]
+    S_A --> S_A2["Ir sozinho"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Corredor → **Aceitar acordo** | ⏱-4h 💰-200 | Helix, Bazaar | — |
+| Corredor → **Ir sozinho** | ⏱+4h | Helix, Bazaar | — |
+| **Ficar quieto** | ⏱+2h | Helix, Bazaar, Ghost | — |
+
+---
+
+## 🧬 HELIX LAB
+
+```mermaid
+graph TD
+    H["HELIX LAB"] --> H_A["Infiltrar por atalho"]
+    H["HELIX LAB"] --> H_B["Se passar por técnico"]
+    H_A --> H_A1["Entrar"]
+    H_A --> H_A2["Abortar"]
+```
+
+| Escolha | Efeitos | Destinos | Especial |
+|---------|---------|----------|----------|
+| Infiltrar → **Entrar** | ⏱-4h 💔-20hp | ⚡ Blackout (obrigatório) | — |
+| Infiltrar → **Abortar** | — | Bazaar, Slums | — |
+| **Se passar por técnico** | ⏱-2h 💰-100 | ⚡ Blackout (obrigatório) | — |
+
+---
+
+## ☠️ BLACKOUT ZONE (Destino Final)
+
+```mermaid
+graph TD
+    BL["BLACKOUT ZONE"] --> BL_A["Fazer contato com receptor"]
+    BL["BLACKOUT ZONE"] --> BL_B["Verificar por armadilhas"]
+    BL_A --> BL_A1["Autenticar — completar entrega"]
+    BL_A --> BL_A2["Exigir mais pagamento"]
+    BL_B --> BL_B1["Prosseguir para entrega"]
+```
+
+| Escolha | Efeitos | Resultado |
+|---------|---------|-----------|
+| Contato → **Autenticar** | 💰+1000 | ✅ **VITÓRIA** |
+| Contato → **Exigir pagamento** | 💰-1000 💔-100hp | ❌ **DERROTA** |
+| Armadilhas → **Prosseguir** | ⏱+1h 💰+1500 | ✅ **VITÓRIA PERFEITA** |
+
+---
+
+## 🔓 Rotas Secretas
+
+| Rota Secreta | Como Desbloquear | Como Trancar |
+|:-------------|:-----------------|:-------------|
+| **Ghost → Bazaar** (Hidden Subnet) | Nexus: Aceitar dica → Confiar (sub-rede) | Bazaar: Vender intel da sub-rede |
+| **Docks → Blackout** (Port Shortcut) | Docks: Negociar → Pagar pedágio | — |
+
+---
+
+## Legenda
+| Símbolo | Significado |
+|---------|-------------|
+| ⏱ | Tempo (+ gasta, − economiza) |
+| 💰 | Créditos |
+| 💔 | Perda de saúde |
+| 💚 | Ganho de saúde |
+| ⚡ | Avanço obrigatório (sem escolha no mapa) |
+| 🔓 | Desbloqueia rota secreta |
+| 🔒 | Tranca rota |

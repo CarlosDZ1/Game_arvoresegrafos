@@ -3,12 +3,12 @@
 //  NIGHT_COURIER | Árvores e Grafos – UniEVANGÉLICA
 // =============================================================
 
-import { initGraph, unlockEdge, lockEdge, DISTRICTS, getAdjacentNodes, dijkstra } from './graph.js';
+import { initGraph, unlockEdge, lockEdge, DISTRICTS, getAdjacentNodes } from './graph.js';
 import { getEvent } from './tree.js';
 import { getState, resetState, applyEffects, moveToDistrict, recordChoice, markDistrictDone, setGameOver, isAlive } from './state.js';
 import { initMap, render, showOptimalPath, clearOptimalPath } from './map.js';
 import { showScreen, updateHUD, showEventCard, hideEventCard, showToast, showPathBanner, toggleAlgoPanel, updateAlgoPanel, showEndScreen } from './ui.js';
-import { showExploration, hideExploration } from './exploration.js';
+import { showExploration } from './exploration.js';
 import { graphSelfTest } from './graph.js';
 import { treeSelfTest } from './tree.js';
 
@@ -60,11 +60,11 @@ function restartGame() {
 
 function goToMap() {
     const state = getState();
-    
+
     if (state.currentNode !== 'bridge') {
         moveToDistrict('bridge');
     }
-    
+
     showScreen('screen-map');
     const svgEl = document.getElementById('city-map');
     if (svgEl) {
@@ -85,13 +85,13 @@ function handleNodeClick(districtId) {
 
     const svgEl = document.getElementById('city-map');
     if (svgEl) svgEl.classList.add('fade-out');
-    
+
     setTimeout(() => {
         moveToDistrict(districtId);
         clearOptimalPath();
         render();
         updateHUD();
-        
+
         if (svgEl) {
             svgEl.classList.remove('fade-out');
             svgEl.classList.add('fade-in');
@@ -109,92 +109,30 @@ function handleNodeClick(districtId) {
 }
 
 
-function _getNextDistrict(leafNode = null) {
-    const state = getState();
-    const current = state.currentNode;
-    
-    const adjacent = getAdjacentNodes(current);
-    const adjacentIds = adjacent.map(conn => conn.to);
-    
-    if (leafNode && leafNode.nextDistricts && leafNode.nextDistricts.length > 0) {
-        const validOptions = leafNode.nextDistricts.filter(id => adjacentIds.includes(id));
-        if (validOptions.length > 0) {
-            const chosen = validOptions[Math.floor(Math.random() * validOptions.length)];
-            console.log(`[AUTO-FLOW] Using decision route: ${current} → ${chosen}`);
-            return chosen;
-        }
-    }
-    
-    // Strategy 2: Pick from adjacent districts that aren't yet completed
-    const candidates = adjacent.filter(conn => {
-        const id = conn.to;
-        const notDone = !state.districtsDone.has(id);
-        const hasEvent = getEvent(id) !== null;
-        return notDone && hasEvent;
-    });
-    
-    if (candidates.length > 0) {
-        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-        console.log(`[AUTO-FLOW] Using adjacent unvisited: ${current} → ${chosen.to}`);
-        return chosen.to;
-    }
-
-    if (adjacentIds.length === 0) {
-        console.warn('[AUTO-FLOW] No reachable districts from', current);
-        return null;
-    }
-    
-    const allUndone = Object.keys(DISTRICTS).filter(id => 
-        !state.districtsDone.has(id) && id !== current && getEvent(id)
-    );
-    if (allUndone.length === 0) return null;
-    
-    const { dist } = dijkstra(current);
-    let closest = null;
-    let minDist = Infinity;
-    allUndone.forEach(id => {
-        if (dist[id] < minDist) {
-            minDist = dist[id];
-            closest = id;
-        }
-    });
-    
-    console.log(`[AUTO-FLOW] Using Dijkstra fallback: ${current} → ${closest}`);
-    return closest;
-}
-
-
-function _autoAdvanceToNextDistrict(leafNode = null) {
-    const nextId = _getNextDistrict(leafNode);
-    if (!nextId) {
-        console.log('[AUTO-FLOW] No next district available.');
-        return false;
-    }
-    
+// ── Forced Advance (mandatory single-destination routes) ──────
+function _forceAdvanceToDistrict(districtId) {
     const state = getState();
     const currentName = DISTRICTS[state.currentNode]?.name || state.currentNode;
-    const nextName = DISTRICTS[nextId]?.name || nextId;
-    
+    const nextName = DISTRICTS[districtId]?.name || districtId;
+
     const svgEl = document.getElementById('city-map');
     if (svgEl) svgEl.classList.add('fade-out');
-    
+
     setTimeout(() => {
-        moveToDistrict(nextId);
+        moveToDistrict(districtId);
         clearOptimalPath();
         render();
         updateHUD();
-        
+
         if (svgEl) {
             svgEl.classList.remove('fade-out');
             svgEl.classList.add('fade-in');
         }
-        
-        showToast(`🔄 Courier moveu automaticamente: ${currentName} → ${nextName}`, 'info');
-        
-        setTimeout(() => _enterDistrict(nextId), 300);
+
+        showToast(`⚡ Rota obrigatória: ${currentName} → ${nextName}`, 'info');
+
+        setTimeout(() => _enterDistrict(districtId), 300);
     }, 250);
-    
-    return true;
 }
 
 // ── District Exploration & Event ──────────────────────────────
@@ -278,12 +216,25 @@ function _applyLeafEffects(node) {
     if (node.win) { endGame(true); return; }
     if (node.lose) { endGame(false); return; }
     if (!isAlive()) { endGame(false); return; }
-    
+
+    // ── Post-event routing: player choice vs. forced advance ──
     setTimeout(() => {
-        const advanced = _autoAdvanceToNextDistrict(node);
-        if (!advanced) {
-            showToast('✦ Awaiting next decision...', 'info');
+        const adjacent = getAdjacentNodes(getState().currentNode).map(c => c.to);
+
+        // Check if this leaf has a mandatory single destination
+        if (node.nextDistricts && node.nextDistricts.length === 1) {
+            const forced = node.nextDistricts[0];
+            if (adjacent.includes(forced)) {
+                console.log(`[ROUTE] Mandatory advance: → ${forced}`);
+                _forceAdvanceToDistrict(forced);
+                return;
+            }
         }
+
+        // Otherwise, return to map and let the player choose
+        console.log('[ROUTE] Returning to map — player chooses next district.');
+        render();
+        showToast('🗺️ Escolha seu próximo destino no mapa.', 'info');
     }, 800);
 }
 
