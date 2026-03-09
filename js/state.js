@@ -35,7 +35,7 @@ export function resetState() {
 
 export function applyEffects(effects) {
     if (!effects) return;
-    _state.time = Math.max(0, _state.time + (effects.time || 0));
+    _state.time = Math.max(0, _state.time - (effects.time || 0));
     _state.credits = Math.max(0, _state.credits + (effects.credits || 0));
     _state.health = Math.min(100, Math.max(0, _state.health + (effects.health || 0)));
 }
