@@ -1258,7 +1258,7 @@ svg.fade-out {
 /* ── Player Character ── Image Sprite ────────────────────── */
 .exploration-player {
   position: absolute;
-  bottom: 22%;
+  bottom: 24%;
   z-index: 20;
   transform-origin: bottom center;
   transition: none;
@@ -1266,7 +1266,11 @@ svg.fade-out {
 
 
 .exploration-player.player-adjust-ghost {
-  bottom: 27%;
+  bottom: 31%;
+}
+
+.exploration-player.player-adjust-slums {
+  bottom: 25%;
 }
 
 .player-glow {
@@ -1364,14 +1368,16 @@ svg.fade-out {
   }
 }
 
-/* NPC Sprite container */
-.npc-sprite {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  animation: npcFloat 4s ease-in-out infinite;
+/* NPC Sprite — Image-Based */
+.npc-sprite-img {
+  display: block;
+  height: 140px;
+  width: auto;
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  user-select: none;
+  animation: npcFloat 4s ease-in-out infinite;
 }
 
 @keyframes npcFloat {

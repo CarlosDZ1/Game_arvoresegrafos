@@ -14,7 +14,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/NexusCore.png',
         npcName: 'INTERMEDIÁRIA',
         npcIcon: '👤',
+        npcImage: 'sprites/NPC/Intermediaria(NexusCore).png',
         npcX: 75,
+        npcY: -30, // ajuste vertical em px (positivo = mais alto, negativo = mais baixo)
+        npcScale: 1.2, // escala do NPC (1 = 100%, 1.5 = 150%, 0.8 = 80%)
         objects: [],
     },
     docks: {
@@ -24,7 +27,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/IronDocks.png',
         npcName: 'LÍDER DA GANGUE',
         npcIcon: '🔧',
+        npcImage: 'sprites/NPC/LiderDeGangue.png',
         npcX: 70,
+        npcY: -40,
+        npcScale: 1.4,
         objects: [],
     },
     ghost: {
@@ -34,7 +40,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/GhostQuarter.png',
         npcName: 'MÉDICA CLANDESTINA',
         npcIcon: '💉',
+        npcImage: 'sprites/NPC/MedicaClantestina.png',
         npcX: 65,
+        npcY: 30,
+        npcScale: 1,
         objects: [],
     },
     bazaar: {
@@ -44,7 +53,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/ChromeBazaar.png',
         npcName: 'VENDEDOR CHROME',
         npcIcon: '🔩',
+        npcImage: 'sprites/NPC/Vendedor.png',
         npcX: 60,
+        npcY: 90,
+        npcScale: 0.6,
         objects: [],
     },
     slums: {
@@ -54,7 +66,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/NeuralSlums.png',
         npcName: 'CORREDORA LOCAL',
         npcIcon: '🏃',
+        npcImage: 'sprites/NPC/corredora.png',
         npcX: 72,
+        npcY: -30,
+        npcScale: 1.2,
         objects: [],
     },
     bridge: {
@@ -64,7 +79,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/SkyBridge.png',
         npcName: 'OPERADOR DA PONTE',
         npcIcon: '🔑',
+        npcImage: 'sprites/NPC/OperadorPonte.png',
         npcX: 68,
+        npcY: -25,
+        npcScale: 1.2,
         objects: [],
     },
     helix: {
@@ -74,7 +92,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/HelixLab.png',
         npcName: 'GUARDA DO LAB',
         npcIcon: '🔬',
+        npcImage: 'sprites/NPC/GuardaLab.png',
         npcX: 74,
+        npcY: -15,
+        npcScale: 1.25,
         objects: [],
     },
     blackout: {
@@ -84,7 +105,10 @@ const SCENES = {
         bgImage: 'sprites/backgrounds/BlackoutZone.png',
         npcName: 'RECEPTOR',
         npcIcon: '📡',
+        npcImage: 'sprites/NPC/Receptor.png',
         npcX: 78,
+        npcY: -20,
+        npcScale: 1,
         objects: [],
     },
 };
@@ -203,31 +227,9 @@ function _buildScene(scene, districtId) {
             <div class="exploration-ground-reflection"></div>
 
             <!-- NPC -->
-            <div class="exploration-npc" id="expl-npc" style="left:${scene.npcX}%">
+            <div class="exploration-npc" id="expl-npc" style="left:${scene.npcX}%; bottom:calc(22% + ${scene.npcY || 0}px)">
                 <div class="npc-glow" style="background:${districtColor}"></div>
-                <div class="npc-sprite" style="--npc-color:${districtColor}">
-                    <div class="npc-s-head">
-                        <div class="npc-s-hair" style="background:${districtColor}"></div>
-                        <div class="npc-s-face"></div>
-                        <div class="npc-s-visor" style="background:${districtColor}"></div>
-                    </div>
-                    <div class="npc-s-neck"></div>
-                    <div class="npc-s-torso">
-                        <div class="npc-s-collar" style="border-color:${districtColor}"></div>
-                        <div class="npc-s-chest"></div>
-                        <div class="npc-s-arm npc-s-arm-l"></div>
-                        <div class="npc-s-arm npc-s-arm-r"></div>
-                        <div class="npc-s-belt" style="background:${districtColor}"></div>
-                    </div>
-                    <div class="npc-s-legs">
-                        <div class="npc-s-leg npc-s-leg-l"></div>
-                        <div class="npc-s-leg npc-s-leg-r"></div>
-                    </div>
-                    <div class="npc-s-boots">
-                        <div class="npc-s-boot npc-s-boot-l" style="border-color:${districtColor}"></div>
-                        <div class="npc-s-boot npc-s-boot-r" style="border-color:${districtColor}"></div>
-                    </div>
-                </div>
+                <img class="npc-sprite-img" src="${scene.npcImage}" alt="${scene.npcName}" draggable="false" style="height:${140 * (scene.npcScale || 1)}px" />
                 <div class="npc-name" style="color:${districtColor}">${scene.npcName}</div>
                 <div class="npc-interact-prompt" id="npc-prompt" style="border-color:${districtColor}; color:${districtColor}">
                     [ E ] INTERAGIR
@@ -235,7 +237,7 @@ function _buildScene(scene, districtId) {
             </div>
 
             <!-- Player Character -->
-            <div class="exploration-player ${districtId === 'ghost' ? 'player-adjust-ghost' : ''}" id="expl-player" style="left:${_playerX}%">
+            <div class="exploration-player ${districtId === 'ghost' ? 'player-adjust-ghost' : districtId === 'slums' ? 'player-adjust-slums' : ''}" id="expl-player" style="left:${_playerX}%">
                 <div class="player-glow"></div>
                 <img class="player-sprite-img" id="player-sprite-img" src="sprites/PlayerIdle/Idle1.png" alt="courier" draggable="false" />
                 <div class="player-shadow"></div>
